@@ -21,20 +21,43 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y             python3-pip             python3-setuptools             python3-wheel             git             zip             openjdk-11-jdk             libffi-dev             libssl-dev             liblzma-dev             zlib1g-dev             libncurses5-dev             libncursesw5-dev
-
+          sudo apt-get install -y \
+            python3-pip \
+            python3-setuptools \
+            python3-wheel \
+            git \
+            zip \
+            openjdk-11-jdk \
+            libffi-dev \
+            libssl-dev \
+            liblzma-dev \
+            zlib1g-dev \
+            libncurses5-dev \
+            libncursesw5-dev
 
       - name: Install buildozer
         run: |
           pip install --upgrade pip
           pip install buildozer cython
 
-      - name: Init buildozer if needed
+      - name: Ensure buildozer.spec exists
         run: |
           if [ ! -f buildozer.spec ]; then
             buildozer init
           fi
 
+      # این مرحله فقط باعث می‌شود Buildozer اندروید SDK را دانلود کند.
+      # اگر fail شد اشکالی ندارد، برای همین آخر خط `|| true` گذاشتیم.
+      - name: Warm-up build (download Android SDK)
+        run: |
+          buildozer android debug || true
+
+      # حالا که SDK و sdkmanager دانلود شده‌اند، لایسنس‌ها را اتوماتیک accept می‌کنیم.
+      - name: Accept Android SDK licenses
+        run: |
+          yes | ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses
+
+      # حالا بیلد واقعی را انجام می‌دهیم.
       - name: Build debug APK
         env:
           BUILDOZER_WARN_ON_ROOT: "1"
