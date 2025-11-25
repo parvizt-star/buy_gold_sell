@@ -52,20 +52,24 @@ jobs:
         run: |
           buildozer android debug || true
 
-      # حالا که SDK و sdkmanager دانلود شده‌اند، لایسنس‌ها را اتوماتیک accept می‌کنیم.
-      - name: Accept Android SDK licenses (if sdkmanager exists)
-        run: |
-          SDKMANAGER="$HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager"
+            - name: Install Android SDK packages (accept licenses)
+            run: |
+          SDKROOT="$HOME/.buildozer/android/platform/android-sdk"
+          SDKMANAGER="$SDKROOT/cmdline-tools/latest/bin/sdkmanager"
           if [ ! -f "$SDKMANAGER" ]; then
-            SDKMANAGER="$HOME/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager"
+            SDKMANAGER="$SDKROOT/tools/bin/sdkmanager"
           fi
 
           if [ -f "$SDKMANAGER" ]; then
             echo "Using sdkmanager at $SDKMANAGER"
-            yes | "$SDKMANAGER" --licenses
+            yes | "$SDKMANAGER" --sdk_root="$SDKROOT" \
+              "platform-tools" \
+              "platforms;android-31" \
+              "build-tools;33.0.2"
           else
-            echo "sdkmanager not found, skipping license acceptance step."
+            echo "sdkmanager not found, skipping SDK packages install."
           fi
+
 
       # حالا بیلد واقعی را انجام می‌دهیم.
       - name: Build debug APK
