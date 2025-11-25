@@ -46,14 +46,13 @@ jobs:
             buildozer init
           fi
 
-      # این مرحله فقط باعث می‌شود Buildozer اندروید SDK را دانلود کند.
-      # اگر fail شد اشکالی ندارد، برای همین آخر خط `|| true` گذاشتیم.
+      # این مرحله فقط SDK و ابزارها را دانلود می‌کند
       - name: Warm-up build (download Android SDK)
         run: |
           buildozer android debug || true
 
-            - name: Install Android SDK packages (accept licenses)
-            run: |
+      - name: Install Android SDK packages (accept licenses)
+        run: |
           SDKROOT="$HOME/.buildozer/android/platform/android-sdk"
           SDKMANAGER="$SDKROOT/cmdline-tools/latest/bin/sdkmanager"
           if [ ! -f "$SDKMANAGER" ]; then
@@ -69,7 +68,6 @@ jobs:
           else
             echo "sdkmanager not found, skipping SDK packages install."
           fi
-
 
       # حالا بیلد واقعی را انجام می‌دهیم.
       - name: Build debug APK
