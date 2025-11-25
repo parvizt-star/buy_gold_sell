@@ -35,10 +35,10 @@ jobs:
             libncurses5-dev \
             libncursesw5-dev
 
-      - name: Install buildozer
+      - name: Install buildozer & python-for-android
         run: |
           pip install --upgrade pip
-          pip install buildozer cython
+          pip install "buildozer==1.5.0" "python-for-android==2023.9.4" cython
 
       - name: Ensure buildozer.spec exists
         run: |
@@ -48,8 +48,11 @@ jobs:
 
       # این مرحله فقط SDK و ابزارها را دانلود می‌کند
       - name: Warm-up build (download Android SDK)
+        env:
+          BUILDOZER_WARN_ON_ROOT: "1"
+          P4A_NO_PREREQUISITES: "1"
         run: |
-          buildozer android debug || true
+          buildozer -v android debug || true
 
       - name: Install Android SDK packages (accept licenses)
         run: |
@@ -73,8 +76,9 @@ jobs:
       - name: Build debug APK
         env:
           BUILDOZER_WARN_ON_ROOT: "1"
+          P4A_NO_PREREQUISITES: "1"
         run: |
-          buildozer android debug
+          buildozer -v android debug
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
