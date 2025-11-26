@@ -38,7 +38,7 @@ jobs:
       - name: Install buildozer & python-for-android
         run: |
           pip install --upgrade pip
-          pip install "buildozer==1.5.0" "python-for-android==2023.9.4" cython
+          pip install "buildozer==1.5.0" "python-for-android==2023.9.16" cython
 
       - name: Ensure buildozer.spec exists
         run: |
