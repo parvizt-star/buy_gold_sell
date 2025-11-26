@@ -16,45 +16,32 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: 3.10
 
-      - name: Install system dependencies
+      - name: Install system deps
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            python3-pip \
-            python3-setuptools \
-            python3-wheel \
-            git \
-            zip \
-            openjdk-11-jdk \
-            libffi-dev \
-            libssl-dev \
-            liblzma-dev \
-            zlib1g-dev \
-            libncurses5-dev \
-            libncursesw5-dev
+            python3-pip python3-setuptools python3-wheel \
+            git zip openjdk-11-jdk \
+            libffi-dev libssl-dev liblzma-dev zlib1g-dev \
+            libncurses5-dev libncursesw5-dev
 
-      - name: Install buildozer & python-for-android
+      - name: Install buildozer & p4a
         run: |
           pip install --upgrade pip
-          pip install "buildozer==1.5.0" "python-for-android==2023.9.16" cython
+          pip install Cython==0.29.33
+          pip install buildozer
+          pip install python-for-android==2024.1.0
 
       - name: Ensure buildozer.spec exists
         run: |
-          if [ ! -f buildozer.spec ]; then
-            buildozer init
-          fi
+          if [ ! -f buildozer.spec ]; then buildozer init; fi
 
-      # این مرحله فقط SDK و ابزارها را دانلود می‌کند
-      - name: Warm-up build (download Android SDK)
-        env:
-          BUILDOZER_WARN_ON_ROOT: "1"
-          P4A_NO_PREREQUISITES: "1"
-        run: |
-          buildozer -v android debug || true
+      - name: Warm up build (download SDK)
+        run: buildozer android debug || true
 
-      - name: Install Android SDK packages (accept licenses)
+      - name: Install Android SDK packages
         run: |
           SDKROOT="$HOME/.buildozer/android/platform/android-sdk"
           SDKMANAGER="$SDKROOT/cmdline-tools/latest/bin/sdkmanager"
@@ -63,25 +50,17 @@ jobs:
           fi
 
           if [ -f "$SDKMANAGER" ]; then
-            echo "Using sdkmanager at $SDKMANAGER"
             yes | "$SDKMANAGER" --sdk_root="$SDKROOT" \
-              "platform-tools" \
-              "platforms;android-31" \
-              "build-tools;33.0.2"
-          else
-            echo "sdkmanager not found, skipping SDK packages install."
+              "platforms;android-33" \
+              "build-tools;33.0.3" \
+              "platform-tools"
           fi
 
-      # حالا بیلد واقعی را انجام می‌دهیم.
-      - name: Build debug APK
-        env:
-          BUILDOZER_WARN_ON_ROOT: "1"
-          P4A_NO_PREREQUISITES: "1"
-        run: |
-          buildozer -v android debug
+      - name: Build APK
+        run: buildozer android debug
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: goldsilver-apk
+          name: GoldSilver-APK
           path: bin/*.apk
